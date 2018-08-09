@@ -32,6 +32,7 @@ namespace NotificationsApi.Controllers
                         new KeyValuePair<string, string>("CC",model.cc),
                         new KeyValuePair<string, string>("Body",model.body)
                     });
+                    formcontent.Headers.Add("CallingAppName", "APIUser");
                     var response = await client.PostAsync(requestUrl, formcontent);
 
                     if (response.StatusCode == System.Net.HttpStatusCode.OK)
