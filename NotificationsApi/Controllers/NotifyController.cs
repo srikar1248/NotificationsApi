@@ -17,26 +17,33 @@ namespace NotificationsApi.Controllers
         [HttpPost]
         public async System.Threading.Tasks.Task<HttpResponseMessage> Email([FromBody] MailModel model)
         {
-            string msg = "";
+            string message = "Failed to send email"; //Default message
             try
             {
                 string requestUrl = ConfigurationManager.AppSettings["RequestUrl"];
-                string content = JsonConvert.SerializeObject(model);
-
+                
                 using (var client = new HttpClient())
                 {
-                    var response = await client.PostAsync(requestUrl, new StringContent(content, Encoding.UTF8, "application/json"));
+                    client.DefaultRequestHeaders.Add("CallingAppName", "APIUser");
+                    var formcontent = new FormUrlEncodedContent(new[]
+                    {
+                        new KeyValuePair<string, string>("To",model.to),
+                        new KeyValuePair<string, string>("Subject",model.subject),
+                        new KeyValuePair<string, string>("CC",model.cc),
+                        new KeyValuePair<string, string>("Body",model.body)
+                    });
+                    var response = await client.PostAsync(requestUrl, formcontent);
 
                     if (response.StatusCode == System.Net.HttpStatusCode.OK)
-                        return Request.CreateResponse((HttpStatusCode)200, new { message = "Email has been sent successfully." });
+                        return Request.CreateResponse((HttpStatusCode)200, new { StatusCode = 200, msg = "Email has been sent successfully." });
                 }
             }
             catch (Exception ex)
             {
-                msg = ex.Message;
+                message = ex.Message;
             }
 
-            return Request.CreateResponse((HttpStatusCode)401, new { message = msg });
+            return Request.CreateResponse((HttpStatusCode)401, new { StatusCode = 401,  msg = message });
         }
         public string Get()
         {
